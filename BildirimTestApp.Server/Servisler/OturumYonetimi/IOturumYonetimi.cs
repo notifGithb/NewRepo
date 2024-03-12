@@ -8,7 +8,7 @@ namespace BildirimTestApp.Server.Servisler.OturumYonetimi
 
         Task KayitOl(KullaniciKayitDto model);
 
-        Task<JwtToken> GirisYap(KullaniciGirisDto model);
+        Task<JwtToken?> GirisYap(KullaniciGirisDto model);
 
         Task<bool> KullaniciSil(string kullanicAdi);
     }

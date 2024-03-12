@@ -171,7 +171,7 @@ public class PeriyodikBildirimOkuyucu : BackgroundService
                         anlikBildirimHubContext,
                         bildirim,
                         bildirim.Outbox,
-                        bildirimTip.Name,
+                        "AnlikBildirimAl",
                         kullaniciBilgiServisi
                     );
                 }
@@ -182,7 +182,7 @@ public class PeriyodikBildirimOkuyucu : BackgroundService
                         anlikBildirimHubContext,
                         bildirim,
                         bildirim.Outbox,
-                        bildirimTip.Name,
+                        "DuyuruBildirimAl",
                         kullaniciBilgiServisi
                     );
                 }
@@ -236,7 +236,13 @@ public class PeriyodikBildirimOkuyucu : BackgroundService
         {
             try
             {
-                var serializeBildirim = await SerializeBildirim(bildirim);
+                var settings = new JsonSerializerSettings
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                };
+                var serializeBildirim = JsonConvert.SerializeObject(bildirim, settings);
+
+                //var serializeBildirim = await SerializeBildirim(bildirim);
                 await anlikBildirimHubContext
                .Clients.Group(
                    kullaniciBilgiServisi

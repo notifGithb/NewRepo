@@ -30,7 +30,7 @@ namespace BildirimTestApp.Server.Servisler.OturumYonetimi
             _kullaniciBilgiServisi = kullaniciBilgiServisi;
         }
 
-        public async Task<JwtToken> GirisYap(KullaniciGirisDto model)
+        public async Task<JwtToken?> GirisYap(KullaniciGirisDto model)
         {
             try
             {

@@ -40,7 +40,6 @@ namespace BildirimTestApp.Server.Controllers
                 {
                     return Ok(token);
                 }
-
                 return NotFound("Kullanici Bulunamadi");
             }
             return BadRequest();
@@ -57,7 +56,6 @@ namespace BildirimTestApp.Server.Controllers
                 {
                     return Ok("Kullanici Silindi.");
                 }
-
                 return NotFound("Kullanici Bulunamadi");
             }
             return NotFound("Kullanici Adi Bulunamadi");

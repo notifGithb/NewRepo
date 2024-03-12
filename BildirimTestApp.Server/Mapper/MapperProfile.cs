@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BildirimTestApp.Server.Models;
 using BildirimTestApp.Server.Models.DTOs;
+using BildirimTestApp.Server.Models.DTOs.BildirimDTO;
 using BildirimTestApp.Server.Servisler.OturumYonetimi.DTO;
 
 namespace BildirimTestApp.Server.Mapper

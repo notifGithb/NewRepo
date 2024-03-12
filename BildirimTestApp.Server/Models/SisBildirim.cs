@@ -24,11 +24,14 @@ namespace BildirimTestApp.Server.Models
         public virtual ICollection<SisBildirimOutbox> SisBildirimOutboxes { get; set; }
     }
 
-    public class AnlikBildirim : IAnlikBildirim 
+    public class AnlikBildirim : IAnlikBildirim
     {
-    
-    
+        public string Aciklama { get; set; }
+
     }
+
+    
+
 
 
     public class EtkinlikDuyuruBildirim : IDuyuruBildirim
@@ -44,7 +47,7 @@ namespace BildirimTestApp.Server.Models
         public string Aciklama { get; set; }
         public string ToplantiKonumu { get; set; }
         public DateTime ToplantiZamani { get; set; }
-        
+
     }
 
     public class YemekhaneDuyuruBildirim : IDuyuruBildirim
@@ -54,7 +57,7 @@ namespace BildirimTestApp.Server.Models
     }
 
 
-    public class EpostaBildirim : IEPostaBildirim 
+    public class EpostaBildirim : IEPostaBildirim
     {
         public string Aciklama { get; set; }
     }
