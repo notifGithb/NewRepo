@@ -1,0 +1,23 @@
+﻿using AutoMapper;
+using BildirimTestApp.Server.Models;
+using BildirimTestApp.Server.Models.DTOs;
+using BildirimTestApp.Server.Servisler.OturumYonetimi.DTO;
+
+namespace BildirimTestApp.Server.Mapper
+{
+    public class MapperProfile : Profile
+    {
+        public MapperProfile()
+        {
+            CreateMap<SisKullanici, KullaniciGirisDto>().ReverseMap();
+            CreateMap<SisKullanici, KullaniciKayitDto>().ReverseMap();
+
+            CreateMap<SisKullanici, GetKullaniciDto>().ReverseMap();
+
+            CreateMap<ToplantiDuyuruBildirim, ToplantiDuyuruBildirimDTO>().ReverseMap();
+            CreateMap<EtkinlikDuyuruBildirim, EtkinlikDuyuruBildirimDTO>().ReverseMap();
+            CreateMap<YemekhaneDuyuruBildirim, YemekhaneDuyuruBildirimDTO>().ReverseMap();
+
+        }
+    }
+}
