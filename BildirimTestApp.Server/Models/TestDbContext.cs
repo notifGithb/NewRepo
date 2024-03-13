@@ -15,7 +15,7 @@ namespace BildirimTestApp.Server.Models
         public virtual DbSet<SisBildirimIcerik> SisBildirimIceriks { get; set; } = null!;
         public virtual DbSet<SisBildirimOutbox> SisBildirimOutboxes { get; set; } = null!;
         public virtual DbSet<SisKullanici> SisKullanicis { get; set; } = null!;
-        public virtual DbSet<Gorev> Gorevs { get; set; } = null!;
+        public virtual DbSet<Gorev> Gorev { get; set; } = null!;
 
         public TestDbContext()
         {
