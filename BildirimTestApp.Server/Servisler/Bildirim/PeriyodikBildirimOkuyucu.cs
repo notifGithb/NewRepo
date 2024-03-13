@@ -192,7 +192,7 @@ public class PeriyodikBildirimOkuyucu : BackgroundService
                         testDbContext,
                         anlikBildirimHubContext,
                         bildirim,
-                        bildirim.Outbox,  
+                        bildirim.Outbox,
                         "EpostaBildirimAl",
                         kullaniciBilgiServisi
                         );
@@ -234,30 +234,26 @@ public class PeriyodikBildirimOkuyucu : BackgroundService
 
         if (outbox.GonderimDenemeSayisi <= kOutboxDenemeSayisi)
         {
-            try
+            var settings = new JsonSerializerSettings
             {
-                var settings = new JsonSerializerSettings
-                {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                };
-                var serializeBildirim = JsonConvert.SerializeObject(bildirim, settings);
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            };
+            var serializeBildirim = JsonConvert.SerializeObject(bildirim, settings);
+            JObject jsonObject = JObject.Parse(serializeBildirim);
+            string? bildirimString = jsonObject.SelectToken("Bildirim.BildirimIcerik.Json")?.ToString();
 
-                //var serializeBildirim = await SerializeBildirim(bildirim);
-                await anlikBildirimHubContext
-               .Clients.Group(
-                   kullaniciBilgiServisi
-                       .GetKullaniciBilgi(outbox.Bildirim.GonderilecekKullaniciId)
-                       .KullaniciAdi
-               )
-               .SendAsync(fonksiyonIsim, serializeBildirim);
+            //var serializeBildirim = await SerializeBildirim(bildirim);
+            await anlikBildirimHubContext
+           .Clients.Group(
+               kullaniciBilgiServisi
+                   .GetKullaniciBilgi(outbox.Bildirim.GonderilecekKullaniciId)
+                   .KullaniciAdi
+           )
+           .SendAsync(fonksiyonIsim, bildirimString);
 
-                testDbContext.SisBildirimOutboxes.Remove(outbox);
-                testDbContext.SaveChanges();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            testDbContext.SisBildirimOutboxes.Remove(outbox);
+            testDbContext.SaveChanges();
+
             outbox.Bildirim.GonderimDurumu = 1;
         }
         else
