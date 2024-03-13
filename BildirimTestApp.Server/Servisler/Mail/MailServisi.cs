@@ -27,15 +27,15 @@ namespace BildirimTestApp.Server.Servisler.Mail
                 var email = new MimeMessage();
                 email.From.Add(MailboxAddress.Parse(_configuration["Mail:Username"]));
 
-                if (mailDto.ToKullanici == null) throw new Exception();
+                if (mailDto.GonderilecekKullaniciMailleri == null) throw new Exception();
 
-                foreach (var kullanici in mailDto.ToKullanici)
+                foreach (var kullanici in mailDto.GonderilecekKullaniciMailleri)
                 {
                     email.To.Add(MailboxAddress.Parse(kullanici));
 
                 }
                 email.Subject = mailDto.Baslik;
-                email.Body = new TextPart(TextFormat.Html) { Text = mailDto.Icerik };
+                email.Body = new TextPart(TextFormat.Html) { Text = mailDto.Aciklama };
 
                 using var smtp = new MailKit.Net.Smtp.SmtpClient();
                 await smtp.ConnectAsync(_configuration["Mail:Host"], Convert.ToInt32(_configuration["Mail:Port"]), SecureSocketOptions.StartTls);

@@ -15,6 +15,7 @@ namespace BildirimTestApp.Server.Models
         public virtual DbSet<SisBildirimIcerik> SisBildirimIceriks { get; set; } = null!;
         public virtual DbSet<SisBildirimOutbox> SisBildirimOutboxes { get; set; } = null!;
         public virtual DbSet<SisKullanici> SisKullanicis { get; set; } = null!;
+        public virtual DbSet<Gorev> Gorevs { get; set; } = null!;
 
         public TestDbContext()
         {
@@ -101,6 +102,10 @@ namespace BildirimTestApp.Server.Models
                 entity.Property(e => e.Rol)
                     .HasMaxLength(500)
                     .IsUnicode(false);
+
+                entity.HasMany(e => e.Gorevs)
+                .WithMany(e => e.SisKullanicis).UsingEntity(e => e.ToTable("SisKullaniciGorevs"));
+
             });
 
             OnModelCreatingPartial(modelBuilder);

@@ -5,7 +5,7 @@
 namespace BildirimTestApp.Server.Migrations
 {
     /// <inheritdoc />
-    public partial class mig_0002 : Migration
+    public partial class mig_05 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -22,6 +22,26 @@ namespace BildirimTestApp.Server.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> GorevAtandiBildirimGonder([FromBody] GorevAtandiAnlikBildirimDTO gorevAtandiAnlikBildirimDTO)
+        {
+            try
+            {
+                var gorevAtandiAnlikBildirim = _mapper.Map<GorevAtandiAnlikBildirim>(gorevAtandiAnlikBildirimDTO);
+
+                await _bildirimHedefOlusturucu.BildirimGonderilecekKullancilar(gorevAtandiAnlikBildirimDTO.GonderilecekKullaniciIdleri);
+
+                await _bildirimOlusturucu.BildirimGonder(gorevAtandiAnlikBildirim, _bildirimHedefOlusturucu, gorevAtandiAnlikBildirim.Aciklama);
+
+                return Ok("Yemekhane Duyurusu Basariyla Olusturuldu.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Bir hata olustu: {ex.Message}");
+            }
+        }
+
+
+        [HttpPost]
         public async Task<IActionResult> YemehaneDuyuruBildirimGonder([FromBody] YemekhaneDuyuruBildirimDTO yemekhaneDuyuruBildirimDTO)
         {
             try
@@ -84,7 +104,7 @@ namespace BildirimTestApp.Server.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> EpostaBildirimOlustur([FromBody] EpostaBildirim epostaBildirim)
+        public async Task<IActionResult> EpostaBildirimGonder([FromBody] EpostaBildirim epostaBildirim)
         {
             try
             {

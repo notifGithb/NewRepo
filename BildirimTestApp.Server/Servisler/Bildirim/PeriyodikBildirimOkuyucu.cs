@@ -192,7 +192,7 @@ public class PeriyodikBildirimOkuyucu : BackgroundService
                         testDbContext,
                         anlikBildirimHubContext,
                         bildirim,
-                        bildirim.Outbox,
+                        bildirim.Outbox,  
                         "EpostaBildirimAl",
                         kullaniciBilgiServisi
                         );

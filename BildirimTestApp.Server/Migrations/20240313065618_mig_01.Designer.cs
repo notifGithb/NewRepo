@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BildirimTestApp.Server.Migrations
 {
     [DbContext(typeof(TestDbContext))]
-    [Migration("20240311121224_mig_0002")]
-    partial class mig_0002
+    [Migration("20240313065618_mig_01")]
+    partial class mig_01
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,25 @@ namespace BildirimTestApp.Server.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("BildirimTestApp.Server.Models.Gorev", b =>
+                {
+                    b.Property<int>("GorevId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GorevId"));
+
+                    b.Property<string>("Aciklama")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("GorevSonTarih")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("GorevId");
+
+                    b.ToTable("Gorevs");
+                });
 
             modelBuilder.Entity("BildirimTestApp.Server.Models.SisBildirim", b =>
                 {
@@ -129,6 +148,21 @@ namespace BildirimTestApp.Server.Migrations
                     b.ToTable("SisKullanici", (string)null);
                 });
 
+            modelBuilder.Entity("GorevSisKullanici", b =>
+                {
+                    b.Property<int>("GorevsGorevId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SisKullanicisKullaniciId")
+                        .HasColumnType("int");
+
+                    b.HasKey("GorevsGorevId", "SisKullanicisKullaniciId");
+
+                    b.HasIndex("SisKullanicisKullaniciId");
+
+                    b.ToTable("GorevSisKullanici");
+                });
+
             modelBuilder.Entity("BildirimTestApp.Server.Models.SisBildirim", b =>
                 {
                     b.HasOne("BildirimTestApp.Server.Models.SisBildirimIcerik", "BildirimIcerik")
@@ -157,6 +191,21 @@ namespace BildirimTestApp.Server.Migrations
                         .HasConstraintName("FK_SisBildirimOutbox_SisBildirim");
 
                     b.Navigation("Bildirim");
+                });
+
+            modelBuilder.Entity("GorevSisKullanici", b =>
+                {
+                    b.HasOne("BildirimTestApp.Server.Models.Gorev", null)
+                        .WithMany()
+                        .HasForeignKey("GorevsGorevId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BildirimTestApp.Server.Models.SisKullanici", null)
+                        .WithMany()
+                        .HasForeignKey("SisKullanicisKullaniciId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("BildirimTestApp.Server.Models.SisBildirim", b =>

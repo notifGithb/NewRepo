@@ -17,5 +17,8 @@ namespace BildirimTestApp.Server.Models
         public string? Rol { get; set; }
 
         public virtual ICollection<SisBildirim> SisBildirims { get; set; }
+
+        public virtual ICollection<Gorev>? Gorevs { get; set; }
+
     }
 }

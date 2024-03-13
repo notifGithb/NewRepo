@@ -12,6 +12,20 @@ namespace BildirimTestApp.Server.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Gorevs",
+                columns: table => new
+                {
+                    GorevId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Aciklama = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    GorevSonTarih = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Gorevs", x => x.GorevId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "SisBildirimIcerik",
                 columns: table => new
                 {
@@ -39,6 +53,30 @@ namespace BildirimTestApp.Server.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SisKullanici", x => x.KullaniciId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GorevSisKullanici",
+                columns: table => new
+                {
+                    GorevsGorevId = table.Column<int>(type: "int", nullable: false),
+                    SisKullanicisKullaniciId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GorevSisKullanici", x => new { x.GorevsGorevId, x.SisKullanicisKullaniciId });
+                    table.ForeignKey(
+                        name: "FK_GorevSisKullanici_Gorevs_GorevsGorevId",
+                        column: x => x.GorevsGorevId,
+                        principalTable: "Gorevs",
+                        principalColumn: "GorevId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_GorevSisKullanici_SisKullanici_SisKullanicisKullaniciId",
+                        column: x => x.SisKullanicisKullaniciId,
+                        principalTable: "SisKullanici",
+                        principalColumn: "KullaniciId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -86,6 +124,11 @@ namespace BildirimTestApp.Server.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_GorevSisKullanici_SisKullanicisKullaniciId",
+                table: "GorevSisKullanici",
+                column: "SisKullanicisKullaniciId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SisBildirim_BildirimIcerikId",
                 table: "SisBildirim",
                 column: "BildirimIcerikId");
@@ -111,7 +154,13 @@ namespace BildirimTestApp.Server.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "GorevSisKullanici");
+
+            migrationBuilder.DropTable(
                 name: "SisBildirimOutbox");
+
+            migrationBuilder.DropTable(
+                name: "Gorevs");
 
             migrationBuilder.DropTable(
                 name: "SisBildirim");
