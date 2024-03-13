@@ -20,8 +20,8 @@ namespace BildirimTestApp.Server.Mapper
             CreateMap<YemekhaneDuyuruBildirim, YemekhaneDuyuruBildirimDTO>().ReverseMap();
             CreateMap<GorevAtandiAnlikBildirim, GorevAtandiAnlikBildirimDTO>().ReverseMap();
 
-            CreateMap<Gorev, GorevDTO>().ReverseMap();
-            CreateMap<GorevAtandiAnlikBildirim, GorevDTO>().ReverseMap();
+            CreateMap<Gorev, GorevOlusturmaDTO>().ReverseMap();
+            CreateMap<GorevAtandiAnlikBildirim, GorevOlusturmaDTO>().ReverseMap();
         }
     }
 }

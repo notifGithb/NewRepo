@@ -1,6 +1,6 @@
 ﻿namespace BildirimTestApp.Server.Models.DTOs
 {
-    public class GorevDTO
+    public class GorevOlusturmaDTO
     {
         public string? Aciklama { get; set; }
         public DateTime GorevSonTarih { get; set; }

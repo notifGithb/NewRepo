@@ -55,8 +55,9 @@ namespace BildirimTestApp.Server.Models
 
     public class YemekhaneDuyuruBildirim : IDuyuruBildirim
     {
-        public DateTime YemekZamani { get; set; }
         public string? Aciklama { get; set; }
+        public DateTime YemekZamani { get; set; }
+
     }
 
 

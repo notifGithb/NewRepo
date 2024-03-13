@@ -49,7 +49,6 @@ public class PeriyodikBildirimOkuyucu : BackgroundService
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-
             await BildirimleriIsle(cancellationToken);
             await Task.Delay(TimeSpan.FromSeconds(20), cancellationToken);
         }
@@ -65,161 +64,140 @@ public class PeriyodikBildirimOkuyucu : BackgroundService
             return;
         }
 
-        try
-        {
-            using var scope = _serviceScopeFactory.CreateScope();
-            var testDbContext = scope.ServiceProvider.GetRequiredService<TestDbContext>();
-            var kullaniciBilgiServisi = serviceProvider.GetRequiredService<IKullaniciBilgiServisi>();
-            var anlikBildirimHubContext = serviceProvider.GetRequiredService<IHubContext<AnlikBildirimHub>>();
+        using var scope = _serviceScopeFactory.CreateScope();
+        var testDbContext = scope.ServiceProvider.GetRequiredService<TestDbContext>();
+        var kullaniciBilgiServisi = serviceProvider.GetRequiredService<IKullaniciBilgiServisi>();
+        var anlikBildirimHubContext = serviceProvider.GetRequiredService<IHubContext<AnlikBildirimHub>>();
 
 
-            await testDbContext
-               .SisKullanicis.Where(x => bagliKullaniciIdler.Contains(x.KullaniciId))
-               .Select(x => x.KullaniciId)
-               .ToArrayAsync(cancellationToken);
+        await testDbContext
+           .SisKullanicis.Where(x => bagliKullaniciIdler.Contains(x.KullaniciId))
+           .Select(x => x.KullaniciId)
+           .ToArrayAsync(cancellationToken);
 
-            var bildirimler = await testDbContext
-                .SisBildirimOutboxes.Where(x =>
-                    bagliKullaniciIdler.Contains(x.Bildirim.GonderilecekKullaniciId)
-                )
-                .Select(x => new
-                {
-                    x.Bildirim,
-                    x.Bildirim.BildirimIcerik,
-                    Outbox = x
-                })
-                .ToArrayAsync();
-
-
-
-            if (bildirimler.Length == 0)
-                return;
-
-
-            foreach (var bildirim in bildirimler)
+        var bildirimler = await testDbContext
+            .SisBildirimOutboxes.Where(x =>
+                bagliKullaniciIdler.Contains(x.Bildirim.GonderilecekKullaniciId)
+            )
+            .Select(x => new
             {
-                var bildirimSerilestirmeKonteyner =
-                    JsonConvert.DeserializeObject<BildirimSerilestirmeKonteyner>(
-                        bildirim.BildirimIcerik.Json
-                    )!;
+                x.Bildirim,
+                x.Bildirim.BildirimIcerik,
+                Outbox = x
+            })
+            .ToArrayAsync();
 
-                var tipIsmi = bildirimSerilestirmeKonteyner.BildirimId;
 
-                var bildirimTip = bildirimTipler.FirstOrDefault(x => x.Name == tipIsmi);
+        if (bildirimler.Length == 0)
+            return;
 
-                if (bildirimTip == null)
-                    logger.LogInformation("Tip bulunamadı");
 
-                var bildirimIcerik = JsonConvert.DeserializeObject(
-                    bildirimSerilestirmeKonteyner.BildirimJSon,
-                    bildirimTip
+        foreach (var bildirim in bildirimler)
+        {
+            var bildirimSerilestirmeKonteyner =
+                JsonConvert.DeserializeObject<BildirimSerilestirmeKonteyner>(
+                    bildirim.BildirimIcerik.Json
+                )!;
+
+            var tipIsmi = bildirimSerilestirmeKonteyner.BildirimId;
+
+            var bildirimTip = bildirimTipler.FirstOrDefault(x => x.Name == tipIsmi);
+
+            if (bildirimTip == null)
+                logger.LogInformation("Tip bulunamadı");
+
+            var bildirimIcerik = JsonConvert.DeserializeObject(
+                bildirimSerilestirmeKonteyner.BildirimJSon,
+                bildirimTip
+            );
+
+            if (bildirimIcerik == null)
+                logger.LogInformation("Bildirim deserialize hata");
+
+            var gonderilecekObje = bildirimIcerik;
+            if (
+                bildirimTip
+                    .GetInterfaces()
+                    .Any(x =>
+                        x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IBildirim<>)
+                    )
+            )
+            {
+                Type? donusturucuTip = null;
+
+                foreach (var dt in donusturucuTipler)
+                {
+                    var genTypeDef = dt.GetInterfaces()
+                        .FirstOrDefault(x =>
+                            x.IsGenericType
+                            && x.GetGenericTypeDefinition() == typeof(IBildirimDonusturucu<,>)
+                        );
+
+                    if (genTypeDef == null)
+                        throw new Exception("Dönüştürücü tipler oluşturulurken hata");
+
+                    if (genTypeDef.GenericTypeArguments.First() == bildirimTip)
+                    {
+                        donusturucuTip = dt;
+                        break;
+                    }
+                }
+
+                if (donusturucuTip == null)
+                    throw new Exception($"{tipIsmi} için dönüştürücü tip bulunamadı");
+
+                var donusturucu = ActivatorUtilities.CreateInstance(
+                    serviceProvider,
+                    donusturucuTip
                 );
 
-                if (bildirimIcerik == null)
-                    logger.LogInformation("Bildirim deserialize hata");
+                var metodInfo = donusturucuTip
+                    .GetMethods()
+                    .First(x => x.Name == nameof(IBildirimDonusturucu<int, int>.Donustur))!;
 
-                var gonderilecekObje = bildirimIcerik;
-                if (
-                    bildirimTip
-                        .GetInterfaces()
-                        .Any(x =>
-                            x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IBildirim<>)
-                        )
-                )
-                {
-                    Type? donusturucuTip = null;
+                gonderilecekObje = metodInfo.Invoke(donusturucu, new[] { bildirimIcerik });
+            }
 
-                    foreach (var dt in donusturucuTipler)
-                    {
-                        var genTypeDef = dt.GetInterfaces()
-                            .FirstOrDefault(x =>
-                                x.IsGenericType
-                                && x.GetGenericTypeDefinition() == typeof(IBildirimDonusturucu<,>)
-                            );
-
-                        if (genTypeDef == null)
-                            throw new Exception("Dönüştürücü tipler oluşturulurken hata");
-
-                        if (genTypeDef.GenericTypeArguments.First() == bildirimTip)
-                        {
-                            donusturucuTip = dt;
-                            break;
-                        }
-                    }
-
-                    if (donusturucuTip == null)
-                        throw new Exception($"{tipIsmi} için dönüştürücü tip bulunamadı");
-
-                    var donusturucu = ActivatorUtilities.CreateInstance(
-                        serviceProvider,
-                        donusturucuTip
+            if (gonderilecekObje == null)
+                logger.LogInformation("gönderilecek bildirim boş geldi.");
+            if (bildirimTip.IsAssignableTo(typeof(IAnlikBildirimKok)))
+            {
+                await OutboxBildirimGonder(
+                    testDbContext,
+                    anlikBildirimHubContext,
+                    bildirim,
+                    bildirim.Outbox,
+                    "AnlikBildirimAl",
+                    kullaniciBilgiServisi
+                );
+            }
+            else if (bildirimTip.IsAssignableTo(typeof(IDuyuruBildirimKok)))
+            {
+                await OutboxBildirimGonder(
+                    testDbContext,
+                    anlikBildirimHubContext,
+                    bildirim,
+                    bildirim.Outbox,
+                    "DuyuruBildirimAl",
+                    kullaniciBilgiServisi
+                );
+            }
+            else if (bildirimTip.IsAssignableTo(typeof(IEPostaBildirimKok)))
+            {
+                await OutboxBildirimGonder(
+                    testDbContext,
+                    anlikBildirimHubContext,
+                    bildirim,
+                    bildirim.Outbox,
+                    "EpostaBildirimAl",
+                    kullaniciBilgiServisi
                     );
-
-                    var metodInfo = donusturucuTip
-                        .GetMethods()
-                        .First(x => x.Name == nameof(IBildirimDonusturucu<int, int>.Donustur))!;
-
-                    gonderilecekObje = metodInfo.Invoke(donusturucu, new[] { bildirimIcerik });
-                }
-
-                if (gonderilecekObje == null)
-                    logger.LogInformation("gönderilecek bildirim boş geldi.");
-                if (bildirimTip.IsAssignableTo(typeof(IAnlikBildirimKok)))
-                {
-                    await OutboxBildirimGonder(
-                        testDbContext,
-                        anlikBildirimHubContext,
-                        bildirim,
-                        bildirim.Outbox,
-                        "AnlikBildirimAl",
-                        kullaniciBilgiServisi
-                    );
-                }
-                else if (bildirimTip.IsAssignableTo(typeof(IDuyuruBildirimKok)))
-                {
-                    await OutboxBildirimGonder(
-                        testDbContext,
-                        anlikBildirimHubContext,
-                        bildirim,
-                        bildirim.Outbox,
-                        "DuyuruBildirimAl",
-                        kullaniciBilgiServisi
-                    );
-                }
-                else if (bildirimTip.IsAssignableTo(typeof(IEPostaBildirimKok)))
-                {
-                    await OutboxBildirimGonder(
-                        testDbContext,
-                        anlikBildirimHubContext,
-                        bildirim,
-                        bildirim.Outbox,
-                        "EpostaBildirimAl",
-                        kullaniciBilgiServisi
-                        );
-                }
-                else
-                {
-                    logger.LogInformation($"Bildirim türü bulunamadı {bildirimTip}");
-                }
+            }
+            else
+            {
+                logger.LogInformation($"Bildirim türü bulunamadı {bildirimTip}");
             }
         }
-        catch (Exception)
-        {
-
-            throw;
-        }
-
-    }
-    private static async Task<string> SerializeBildirim(object bildirim)
-    {
-        var settings = new JsonSerializerSettings
-        {
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-        };
-        var jsonBildirim = JsonConvert.SerializeObject(bildirim, settings);
-        var parsedJson = JObject.Parse(jsonBildirim);
-
-        return JsonConvert.SerializeObject(parsedJson);
     }
 
     private static async Task OutboxBildirimGonder(

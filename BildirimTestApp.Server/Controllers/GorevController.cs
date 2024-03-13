@@ -29,7 +29,7 @@ namespace BildirimTestApp.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GorevOlustur(GorevDTO gorevDTO)
+        public async Task<IActionResult> GorevOlustur(GorevOlusturmaDTO gorevDTO)
         {
             var gorev = _mapper.Map<Gorev>(gorevDTO);
             if (gorevDTO.GonderilecekKullaniciIdleri != null && gorevDTO.GonderilecekKullaniciIdleri.Any())
