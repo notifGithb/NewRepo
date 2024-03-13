@@ -12,12 +12,12 @@ namespace BildirimTestApp.Server.Controllers
     [ApiController]
     public class GorevController : ControllerBase
     {
-
         private readonly TestDbContext _context;
         private readonly IBildirimHedefOlusturucu _bildirimHedefOlusturucu;
         private readonly IBildirimOlusturucu _bildirimOlusturucu;
         private readonly IMapper _mapper;
         private readonly IKullaniciBilgiServisi _kullaniciBilgiServisi;
+
         public GorevController(TestDbContext context, IBildirimHedefOlusturucu bildirimHedefOlusturucu, IBildirimOlusturucu bildirimOlusturucu, IMapper mapper, IKullaniciBilgiServisi kullaniciBilgiServisi)
         {
 
@@ -36,26 +36,26 @@ namespace BildirimTestApp.Server.Controllers
             {
                 foreach (var kullaniciId in gorevDTO.GonderilecekKullaniciIdleri)
                 {
-                    var kullanici = await _kullaniciBilgiServisi.GetKullaniciBilgiAsync(kullaniciId);
-                    var deneme = await _context.SisKullanicis.FindAsync(kullaniciId);
-                    if (deneme != null)
+                    ///var kullanici = await _kullaniciBilgiServisi.GetKullaniciBilgiAsync(kullaniciId);
+                    var kullanici = await _context.SisKullanicis.FindAsync(kullaniciId);
+                    if (kullanici != null)
                     {
-                        gorev.SisKullanicis.Add(deneme);
+                        gorev.SisKullanicis.Add(kullanici);
                     }
                     else
                     {
                         return BadRequest($"Kullanici Bulunamadi.");
                     }
                 }
-                
-            }
-            await _context.Gorevs.AddAsync(gorev);
-            await _context.SaveChangesAsync();
-            var gorevAtandiAnlikBildirim = _mapper.Map<GorevAtandiAnlikBildirim>(gorevDTO);
-            await _bildirimHedefOlusturucu.BildirimGonderilecekKullancilar(gorevDTO.GonderilecekKullaniciIdleri);
-            await _bildirimOlusturucu.BildirimGonder(gorevAtandiAnlikBildirim, _bildirimHedefOlusturucu, gorevDTO.Aciklama);
+                await _context.Gorevs.AddAsync(gorev);
+                await _context.SaveChangesAsync();
+                var gorevAtandiAnlikBildirim = _mapper.Map<GorevAtandiAnlikBildirim>(gorevDTO);
+                await _bildirimHedefOlusturucu.BildirimGonderilecekKullancilar(gorevDTO.GonderilecekKullaniciIdleri);
+                await _bildirimOlusturucu.BildirimGonder(gorevAtandiAnlikBildirim, _bildirimHedefOlusturucu, gorevDTO.Aciklama);
 
-            return Ok("Gorev Atandi");
+                return Ok("Gorev Olusturuldu.");
+            }
+            return BadRequest("Gorev Olusturulamadi.");
         }
     }
 }
