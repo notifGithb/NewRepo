@@ -6,6 +6,7 @@ using BildirimTestApp.Server.RateLimitingMiddleware;
 using BildirimTestApp.Server.Servisler;
 using BildirimTestApp.Server.Servisler.Bildirim;
 using BildirimTestApp.Server.Servisler.Kullanici;
+using BildirimTestApp.Server.Servisler.KullaniciGorev;
 using BildirimTestApp.Server.Servisler.Mail;
 using BildirimTestApp.Server.Servisler.OturumYonetimi;
 using BildirimTestApp.Server.Servisler.OturumYonetimi.JWT;
@@ -22,7 +23,6 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-
 
 
         builder.Services.AddControllers();
@@ -43,7 +43,7 @@ public class Program
         builder.Services.AddScoped<IBildirimHedefOlusturucu, BildirimHedefOlusturucu>();
         builder.Services.AddScoped<IOturumYonetimi, OturumYonetimi>();
         builder.Services.AddScoped<IJwtServisi, JwtServisi>();
-
+        builder.Services.AddScoped<IGorevServisi, GorevServisi>();
 
         builder.Services.AddSingleton<IKullaniciBilgiServisi, KullaniciBilgiServisi>();
         builder.Services.AddSingleton<IMailServisi, MailServisi>();

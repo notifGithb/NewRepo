@@ -21,25 +21,6 @@ namespace BildirimTestApp.Server.Controllers
             _mapper = mapper;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> GorevAtandiBildirimGonder([FromBody] GorevAtandiAnlikBildirimDTO gorevAtandiAnlikBildirimDTO)
-        {
-            try
-            {
-                var gorevAtandiAnlikBildirim = _mapper.Map<GorevAtandiAnlikBildirim>(gorevAtandiAnlikBildirimDTO);
-
-                await _bildirimHedefOlusturucu.BildirimGonderilecekKullancilar(gorevAtandiAnlikBildirimDTO.GonderilecekKullaniciIdleri);
-
-                await _bildirimOlusturucu.BildirimGonder(gorevAtandiAnlikBildirim, _bildirimHedefOlusturucu, gorevAtandiAnlikBildirim.Aciklama);
-
-                return Ok("Yemekhane Duyurusu Basariyla Olusturuldu.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Bir hata olustu: {ex.Message}");
-            }
-        }
-
 
         [HttpPost]
         public async Task<IActionResult> YemehaneDuyuruBildirimGonder([FromBody] YemekhaneDuyuruBildirimDTO yemekhaneDuyuruBildirimDTO)
@@ -116,5 +97,24 @@ namespace BildirimTestApp.Server.Controllers
                 return StatusCode(500, $"Bir hata oluştu: {ex.Message}");
             }
         }
+
+        //[HttpPost]
+        //public async Task<IActionResult> GorevAtandiBildirimGonder([FromBody] GorevAtandiAnlikBildirimDTO gorevAtandiAnlikBildirimDTO)
+        //{
+        //    try
+        //    {
+        //        var gorevAtandiAnlikBildirim = _mapper.Map<GorevAtandiAnlikBildirim>(gorevAtandiAnlikBildirimDTO);
+
+        //        await _bildirimHedefOlusturucu.BildirimGonderilecekKullancilar(gorevAtandiAnlikBildirimDTO.GonderilecekKullaniciIdleri);
+
+        //        await _bildirimOlusturucu.BildirimGonder(gorevAtandiAnlikBildirim, _bildirimHedefOlusturucu, gorevAtandiAnlikBildirim.Aciklama);
+
+        //        return Ok("Gorev Atandi Bildiri Olusturuldu.");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"Bir hata olustu: {ex.Message}");
+        //    }
+        //}
     }
 }
