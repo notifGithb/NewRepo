@@ -159,13 +159,17 @@ public class PeriyodikBildirimOkuyucu : BackgroundService
             }
 
             if (gonderilecekObje == null)
+            {
                 logger.LogInformation("gönderilecek bildirim boş geldi.");
+                return;
+            }
+
             if (bildirimTip.IsAssignableTo(typeof(IAnlikBildirimKok)))
             {
                 await OutboxBildirimGonder(
                     testDbContext,
                     anlikBildirimHubContext,
-                    bildirim,
+                    gonderilecekObje,
                     bildirim.Outbox,
                     "AnlikBildirimAl",
                     kullaniciBilgiServisi
@@ -176,7 +180,7 @@ public class PeriyodikBildirimOkuyucu : BackgroundService
                 await OutboxBildirimGonder(
                     testDbContext,
                     anlikBildirimHubContext,
-                    bildirim,
+                    gonderilecekObje,
                     bildirim.Outbox,
                     "DuyuruBildirimAl",
                     kullaniciBilgiServisi
@@ -187,7 +191,7 @@ public class PeriyodikBildirimOkuyucu : BackgroundService
                 await OutboxBildirimGonder(
                     testDbContext,
                     anlikBildirimHubContext,
-                    bildirim,
+                    gonderilecekObje,
                     bildirim.Outbox,
                     "EpostaBildirimAl",
                     kullaniciBilgiServisi
@@ -212,22 +216,9 @@ public class PeriyodikBildirimOkuyucu : BackgroundService
 
         if (outbox.GonderimDenemeSayisi <= kOutboxDenemeSayisi)
         {
-            var settings = new JsonSerializerSettings
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-            };
-            var serializeBildirim = JsonConvert.SerializeObject(bildirim, settings);
-            JObject jsonObject = JObject.Parse(serializeBildirim);
-            string? bildirimString = jsonObject.SelectToken("Bildirim.BildirimIcerik.Json")?.ToString();
-
-            //var serializeBildirim = await SerializeBildirim(bildirim);
-            await anlikBildirimHubContext
-           .Clients.Group(
-               kullaniciBilgiServisi
-                   .GetKullaniciBilgi(outbox.Bildirim.GonderilecekKullaniciId)
-                   .KullaniciAdi
+            await anlikBildirimHubContext.Clients.Group(kullaniciBilgiServisi.GetKullaniciBilgi(outbox.Bildirim.GonderilecekKullaniciId).KullaniciAdi
            )
-           .SendAsync(fonksiyonIsim, bildirimString);
+           .SendAsync(fonksiyonIsim, JsonConvert.SerializeObject(new { bildirim, tipId = bildirim.GetType().Name }));
 
             testDbContext.SisBildirimOutboxes.Remove(outbox);
             testDbContext.SaveChanges();

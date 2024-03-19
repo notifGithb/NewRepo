@@ -12,15 +12,15 @@ public class AnlikBildirimHub : BildirimHubKok
     )
         : base(logger, kullaniciBilgiServisi) { }
 
-    public async Task NewMessage(string user, string message)
-    {
-        await Clients.All.SendAsync("messageReceived", user, message);
-    }
+    //public async Task NewMessage(string user, string message)
+    //{
+    //    await Clients.All.SendAsync("messageReceived", user, message);
+    //}
 
-    public async Task SendMessageToUser(string fromUserName, string toUserName, string message)
-    {
-        await Clients.Group(toUserName).SendAsync("messageToUserReceived", fromUserName, message);
-    }
+    //public async Task SendMessageToUser(string fromUserName, string toUserName, string message)
+    //{
+    //    await Clients.Group(toUserName).SendAsync("messageToUserReceived", fromUserName, message);
+    //}
 
 
 }
